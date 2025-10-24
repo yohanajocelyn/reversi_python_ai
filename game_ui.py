@@ -1,16 +1,50 @@
 import pygame
 import sys
-from variables import constants as const
-from game.game_logic import GameLogic
-from ui.game_ui import GameUI
+from game_logic import GameLogic
 
-class Game:
+# --- Game Drawing Class ---
+# This class ONLY handles drawing to the screen.
+# It uses "static methods" so we can call them without creating an instance.
+class GameUI:
+    WIDTH = GameLogic.WIDTH
+    HEIGHT = GameLogic.HEIGHT
+
+    @staticmethod
+    def draw_board(screen):
+        """Draws the board background and grid lines."""
+        screen.fill(GameLogic.BOARD_COLOR)
+        for i in range(GameLogic.ROWS + 1):
+            pygame.draw.line(screen, GameLogic.LINE_COLOR, (0, i * GameLogic.SQUARE_SIZE), (GameLogic.WIDTH, i * GameLogic.SQUARE_SIZE), 2)
+            pygame.draw.line(screen, GameLogic.LINE_COLOR, (i * GameLogic.SQUARE_SIZE, 0), (i * GameLogic.SQUARE_SIZE, GameLogic.HEIGHT), 2)
+
+    @staticmethod
+    def draw_pieces(screen, board):
+        """Draws all the pieces currently on the board."""
+        for row in range(GameLogic.ROWS):
+            for col in range(GameLogic.COLS):
+                piece = board[row][col]
+                if piece != GameLogic.EMPTY:
+                    color = GameLogic.BLACK if piece == GameLogic.BLACK_PIECE else GameLogic.WHITE
+                    center_x = col * GameLogic.SQUARE_SIZE + GameLogic.SQUARE_SIZE // 2
+                    center_y = row * GameLogic.SQUARE_SIZE + GameLogic.SQUARE_SIZE // 2
+                    pygame.draw.circle(screen, color, (center_x, center_y), GameLogic.PIECE_RADIUS)
+
+    @staticmethod
+    def draw_valid_moves(screen, moves_list):
+        """
+        NEW FUNCTION: Draws hint dots for all valid moves.
+        """
+        for row, col in moves_list:
+            center_x = col * GameLogic.SQUARE_SIZE + GameLogic.SQUARE_SIZE // 2
+            center_y = row * GameLogic.SQUARE_SIZE + GameLogic.SQUARE_SIZE // 2
+            pygame.draw.circle(screen, GameLogic.VALID_MOVE_COLOR, (center_x, center_y), GameLogic.HINT_RADIUS)
+
     def run_game(self):
         # Initialize all Pygame modules
         pygame.init()
         
         # Set up the game window
-        screen = pygame.display.set_mode((const.WIDTH, const.HEIGHT))
+        screen = pygame.display.set_mode((GameLogic.WIDTH, GameLogic.HEIGHT))
         pygame.display.set_caption("Othello (Reversi)")
         
         # Set up the game clock to control FPS
@@ -34,8 +68,8 @@ class Game:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     
                     # 2. Convert pixel coordinates to board (row, col)
-                    clicked_row = mouse_y // const.SQUARE_SIZE
-                    clicked_col = mouse_x // const.SQUARE_SIZE
+                    clicked_row = mouse_y // GameLogic.SQUARE_SIZE
+                    clicked_col = mouse_x // GameLogic.SQUARE_SIZE
                     
                     # 3. Check if the clicked square is in our list of valid moves
                     if (clicked_row, clicked_col) in valid_moves:
@@ -78,4 +112,9 @@ class Game:
 
         # --- Shutdown ---
         pygame.quit()
+
         sys.exit()
+
+if __name__ == "__main__":
+    ui = GameUI()
+    ui.run_game()
