@@ -1,4 +1,6 @@
 # --- Constants ---
+import copy
+import math
 
 # Board dimensions
 ROWS = 8
@@ -138,3 +140,176 @@ class GameLogic:
         
         # 4. Switch to the other player for the next turn
         self.switch_player()
+
+class AIPlayer:
+    def __init__(self, player_piece, difficulty_depth=4):
+        """
+        Initializes the AI.
+        :param player_piece: The piece the AI will play as (e.g., BLACK_PIECE or WHITE_PIECE)
+        :param difficulty_depth: How many moves ahead the AI will look.
+        """
+        self.player_piece = player_piece
+        self.opponent_piece = WHITE_PIECE if player_piece == BLACK_PIECE else BLACK_PIECE
+        self.depth = difficulty_depth
+
+        # Positional weights for the 8x8 board.
+        # Corners are most valuable, edges are good, squares next to corners are bad.
+        self.POSITIONAL_WEIGHTS = [
+            [120, -20, 20,  5,  5, 20, -20, 120],
+            [-20, -40, -5, -5, -5, -5, -40, -20],
+            [ 20,  -5, 15,  3,  3, 15,  -5,  20],
+            [  5,  -5,  3,  3,  3,  3,  -5,   5],
+            [  5,  -5,  3,  3,  3,  3,  -5,   5],
+            [ 20,  -5, 15,  3,  3, 15,  -5,  20],
+            [-20, -40, -5, -5, -5, -5, -40, -20],
+            [120, -20, 20,  5,  5, 20, -20, 120]
+        ]
+
+    def evaluate_board(self, board, game_over):
+        """
+        Evaluates the current board state based on a heuristic.
+        A positive score is good for the AI, negative is good for the Human.
+        """
+        
+        # If the game is over, the score is based on the final piece count
+        if game_over:
+            ai_score = 0
+            opp_score = 0
+            for r in range(ROWS):
+                for c in range(COLS):
+                    if board[r][c] == self.player_piece:
+                        ai_score += 1
+                    elif board[r][c] == self.opponent_piece:
+                        opp_score += 1
+            
+            if ai_score > opp_score:
+                return math.inf  # AI wins
+            elif opp_score > ai_score:
+                return -math.inf # Human wins
+            else:
+                return 0 # Draw
+        
+        # --- Heuristic for a game in progress ---
+        # We use positional weights, not just piece count
+        ai_total_weight = 0
+        opp_total_weight = 0
+        
+        for r in range(ROWS):
+            for c in range(COLS):
+                weight = self.POSITIONAL_WEIGHTS[r][c]
+                if board[r][c] == self.player_piece:
+                    ai_total_weight += weight
+                elif board[r][c] == self.opponent_piece:
+                    opp_total_weight += weight
+
+        # The score is the difference in positional weights
+        return ai_total_weight - opp_total_weight
+
+
+    def find_best_move(self, game_logic_instance):
+        """
+        This is the entry point for the AI.
+        It iterates through all possible moves and finds the one with
+        the highest score from the alpha_beta algorithm.
+        """
+        best_move = None
+        best_score = -math.inf
+        alpha = -math.inf
+        beta = math.inf
+
+        # Get all valid moves for the AI
+        valid_moves = game_logic_instance.get_valid_moves()
+        
+        # (Optional) Shuffle moves to make the AI less predictable
+        # random.shuffle(valid_moves) 
+
+        for move in valid_moves:
+            # Create a deep copy of the game state to simulate this move
+            # We don't want to change the *actual* game board
+            simulated_game = copy.deepcopy(game_logic_instance)
+            simulated_game.make_move(move[0], move[1])
+            
+            # Call alpha_beta on the *resulting* board state
+            # It's now the opponent's (minimizing) turn
+            # We pass self.depth - 1 because one move has already been made
+            move_score = self.alpha_beta(simulated_game, self.depth - 1, alpha, beta, False)
+
+            # Update the best score and move
+            if move_score > best_score:
+                best_score = move_score
+                best_move = move
+            
+            # Update alpha for the root node
+            alpha = max(alpha, best_score)
+            
+        print(f"AI chose move: {best_move} with score: {best_score}")
+        return best_move
+
+
+    def alpha_beta(self, game_state, depth, alpha, beta, is_maximizing_player):
+        """
+        The core Minimax algorithm with Alpha-Beta Pruning.
+        """
+        
+        # --- Check for Terminal/Base Cases ---
+        valid_moves = game_state.get_valid_moves()
+        
+        # Check if the game is over (no moves for current player)
+        if not valid_moves:
+            # Check if the *other* player also has no moves (Game Over)
+            temp_game = copy.deepcopy(game_state)
+            temp_game.switch_player()
+            if not temp_game.get_valid_moves():
+                # Game is Over
+                return self.evaluate_board(game_state.board, game_over=True)
+            else:
+                # This is a skipped turn, not a game-ending state
+                # We must continue the search from the other player's perspective
+                # The 'depth' doesn't decrease, as this is a forced "pass"
+                if is_maximizing_player:
+                    # AI (Max) has to skip, so Min plays
+                    return self.alpha_beta(temp_game, depth, alpha, beta, False)
+                else:
+                    # Human (Min) has to skip, so Max plays
+                    return self.alpha_beta(temp_game, depth, alpha, beta, True)
+
+        # Base case: If we've reached the maximum depth, return the heuristic score
+        if depth == 0:
+            return self.evaluate_board(game_state.board, game_over=False)
+
+        # --- Recursive Step ---
+        if is_maximizing_player:
+            best_value = -math.inf
+            for move in valid_moves:
+                # Simulate the move
+                new_game_state = copy.deepcopy(game_state)
+                new_game_state.make_move(move[0], move[1])
+                
+                # Recurse (it's now the minimizer's turn)
+                value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, False)
+                
+                best_value = max(best_value, value)
+                alpha = max(alpha, best_value)
+                
+                # Pruning
+                if alpha >= beta:
+                    break # Beta cutoff
+            return best_value
+            
+        else: # Minimizing player
+            best_value = math.inf
+            for move in valid_moves:
+                # Simulate the move
+                new_game_state = copy.deepcopy(game_state)
+                new_game_state.make_move(move[0], move[1])
+                
+                # Recurse (it's now the maximizer's turn)
+                value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, True)
+                
+                best_value = min(best_value, value)
+                beta = min(beta, best_value)
+                
+                # Pruning
+                if alpha >= beta:
+                    break # Alpha cutoff
+            return best_value

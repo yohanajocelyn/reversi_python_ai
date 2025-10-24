@@ -1,6 +1,6 @@
 import pygame
 import sys
-from game_logic import GameLogic
+from game_logic import GameLogic, AIPlayer
 import game_logic as const
 
 # --- Game Drawing Class ---
@@ -52,18 +52,29 @@ class GameUI:
         
         # --- Create an instance of the game logic ---
         game = GameLogic()
+
+        # --- Define Players ---
+        # Human will be Black, AI will be White
+        HUMAN_PLAYER = const.BLACK_PIECE
+        AI_PLAYER = const.WHITE_PIECE
+
+        # --- Create an instance of the AI ---
+        # You can change difficulty_depth. 
+        # 4 is decent. 5-6 is much stronger but slower.
+        ai = AIPlayer(AI_PLAYER, difficulty_depth=4)
         
         # --- Get the first set of valid moves ---
         valid_moves = game.get_valid_moves()
 
         running = True
+        gameUi = GameUI()
         while running:
             # --- Event Handling ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN and game.current_player == HUMAN_PLAYER:
                     # 1. Get mouse position in pixels
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     
@@ -82,8 +93,8 @@ class GameUI:
                         
                         # --- Handle a skipped turn ---
                         # If the new player has no valid moves, skip their turn
-                        if not valid_moves:
-                            print(f"Player {game.current_player} has no moves! Skipping turn.")
+                        if not valid_moves and running:
+                            print(f"Player {game.current_player} (AI) has no moves! Skipping turn.")
                             game.switch_player()
                             valid_moves = game.get_valid_moves()
                             
@@ -92,7 +103,48 @@ class GameUI:
                                 print("Game Over! No players have valid moves.")
                                 running = False # End the game
 
-            gameUi = GameUI()
+            # --- AI's Turn (No event checking needed) ---
+            if game.current_player == AI_PLAYER and running:
+                
+                # --- Update display to show Human's last move ---
+                # (We do this here so the player sees the board *before* the AI thinks)
+                gameUi.draw_board(screen)
+                gameUi.draw_pieces(screen, game.board)
+                pygame.display.flip() # Show the board
+
+                pygame.time.wait(1000)
+                
+                # --- Get the AI's move ---
+                pygame.display.set_caption("Othello (Reversi) - AI is thinking...")
+                best_move = ai.find_best_move(game)
+                pygame.display.set_caption("Othello (Reversi)")
+
+                if best_move:
+                    # --- Make the AI's move ---
+                    game.make_move(best_move[0], best_move[1])
+                    
+                    # --- Get valid moves for the *next* player (Human) ---
+                    valid_moves = game.get_valid_moves()
+
+                    # --- Handle skipped turn (if Human has no moves) ---
+                    if not valid_moves and running:
+                        print(f"Player {game.current_player} (Human) has no moves! Skipping turn.")
+                        game.switch_player()
+                        valid_moves = game.get_valid_moves() # Get moves for AI again
+                        
+                        # If *still* no moves, game is over
+                        if not valid_moves:
+                            print("Game Over! No players have valid moves.")
+                            running = False
+                else:
+                    # This case handles if the AI *starts* its turn but has no moves
+                    # (which should be caught by the human's turn logic, but this is safe)
+                    print(f"Player {game.current_player} (AI) has no moves! Skipping turn.")
+                    game.switch_player()
+                    valid_moves = game.get_valid_moves() # Get moves for Human
+                    if not valid_moves:
+                        print("Game Over! No players have valid moves.")
+                        running = False
 
             # --- Drawing ---
             # 1. Draw the static board (background and grid)
@@ -100,6 +152,9 @@ class GameUI:
             
             # 2. Draw the pieces on top of the board (using the logic's board)
             gameUi.draw_pieces(screen, game.board)
+
+            if game.current_player == HUMAN_PLAYER:
+                gameUi.draw_valid_moves(screen, valid_moves)
 
             # 3. NEW: Draw the hint dots for valid moves
             gameUi.draw_valid_moves(screen, valid_moves)
@@ -109,6 +164,7 @@ class GameUI:
             
             # --- Frame Limiting ---
             clock.tick(60)
+
 
         # --- Shutdown ---
         pygame.quit()
