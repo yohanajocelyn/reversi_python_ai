@@ -34,7 +34,7 @@ class GameLogic:
         self.current_player = BLACK_PIECE
 
     def create_board(self):
-        """Initializes the 8x8 board grid and places the four starting pieces."""
+        # Initializes the 8x8 board grid and places the four starting pieces.
         board = [[EMPTY] * COLS for _ in range(ROWS)]
         # Place the four starting pieces
         board[3][3] = WHITE_PIECE
@@ -44,13 +44,11 @@ class GameLogic:
         return board
 
     def switch_player(self):
-        """Swaps the current player."""
+        # Swaps the current player.
         self.current_player = WHITE_PIECE if self.current_player == BLACK_PIECE else BLACK_PIECE
 
     def get_valid_moves(self):
-        """
-        Generates a list of all valid (row, col) moves for the current player.
-        """
+        # Generates a list of all valid (row, col) moves for the current player.
         valid_moves = []
         for r in range(ROWS):
             for c in range(COLS):
@@ -59,12 +57,12 @@ class GameLogic:
         return valid_moves
 
     def is_valid_move(self, row, col):
-        """
-        Checks if placing a piece at (row, col) is a valid move.
-        A move is valid if:
-        1. The square is empty.
-        2. It outflanks at least one opponent piece in any of the 8 directions.
-        """
+        # 
+        # Checks if placing a piece at (row, col) is a valid move.
+        # A move is valid if:
+        # 1. The square is empty.
+        # 2. It outflanks at least one opponent piece in any of the 8 directions.
+        # 
         # 1. If the square is not empty, it's not a valid move
         if self.board[row][col] != EMPTY:
             return False
@@ -103,11 +101,11 @@ class GameLogic:
         return False
 
     def make_move(self, row, col):
-        """
-        Places a piece on the board at (row, col) and flips all
-        outflanked opponent pieces.
-        (Assumes the move is already validated)
-        """
+        
+        # Places a piece on the board at (row, col) and flips all
+        # outflanked opponent pieces.
+        # (Assumes the move is already validated)
+        
         opponent = WHITE_PIECE if self.current_player == BLACK_PIECE else BLACK_PIECE
         pieces_to_flip = []
 

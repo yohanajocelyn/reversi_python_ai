@@ -12,7 +12,7 @@ class GameUI:
 
     @staticmethod
     def draw_board(screen):
-        """Draws the board background and grid lines."""
+        # Draws the board background and grid line
         screen.fill(const.BOARD_COLOR)
         for i in range(const.ROWS + 1):
             pygame.draw.line(screen, const.LINE_COLOR, (0, i * const.SQUARE_SIZE), (const.WIDTH, i * const.SQUARE_SIZE), 2)
@@ -20,7 +20,7 @@ class GameUI:
 
     @staticmethod
     def draw_pieces(screen, board):
-        """Draws all the pieces currently on the board."""
+        # Draws all the pieces currently on the boar
         for row in range(const.ROWS):
             for col in range(const.COLS):
                 piece = board[row][col]
@@ -32,9 +32,8 @@ class GameUI:
 
     @staticmethod
     def draw_valid_moves(screen, moves_list):
-        """
-        NEW FUNCTION: Draws hint dots for all valid moves.
-        """
+        
+        # Draws hint dots for all valid moves.
         for row, col in moves_list:
             center_x = col * const.SQUARE_SIZE + const.SQUARE_SIZE // 2
             center_y = row * const.SQUARE_SIZE + const.SQUARE_SIZE // 2
