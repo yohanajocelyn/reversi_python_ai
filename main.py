@@ -65,7 +65,7 @@ class Application:
         
         if self.game_state == "INTRO":
             if self.start_btn_rect.collidepoint(pos):
-                self.game_controller = GameController(ai_difficulty=4)
+                self.game_controller = GameController(difficulty_depth=4)
                 self.game_state = "PLAYING"
         
         elif self.game_state == "PLAYING":
@@ -77,7 +77,7 @@ class Application:
         
         elif self.game_state == "GAME_OVER":
             if self.reset_btn_rect.collidepoint(pos):
-                self.game_controller = GameController(ai_difficulty=4)
+                self.game_controller = GameController(difficulty_depth=4)
                 self.game_state = "PLAYING"
 
     def update(self):

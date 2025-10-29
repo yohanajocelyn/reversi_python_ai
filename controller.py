@@ -8,11 +8,11 @@ class GameController:
     and game state (turns, game over).
     """
     
-    def __init__(self, ai_difficulty=4):
+    def __init__(self, difficulty_depth=4):
         self.board = Board()
         self.player_black = HumanPlayer(const.BLACK_PIECE)
-        self.player_white = AIPlayer(const.WHITE_PIECE, ai_difficulty)
-        
+        self.player_white = AIPlayer(const.WHITE_PIECE, difficulty_depth)
+
         # Human (Black) always starts
         self.current_player = self.player_black 
         
