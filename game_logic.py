@@ -241,7 +241,7 @@ class AIPlayer:
             # - untuk mendapatkan score dari move yang sedang disimulasikan ini
             # depth - 1 karena kita sudah melakukan 1 move di level ini, jadi mengurangi difficulty depth yang bisa dia lakukan next
             # Diset False karena setelah AI (Maximizer) jalan, next manusianya yang jalan (Minimizer)
-            move_score = self.alpha_beta(simulated_game, self.depth - 1, alpha, beta, False)
+            move_score = self.min_value(simulated_game, self.depth - 1, alpha, beta)
 
             # Untuk pertama, best_score pasti akan tergantikan oleh move_score karena best_score awalnya -inf
             if move_score > best_score:
@@ -260,70 +260,146 @@ class AIPlayer:
     # depth = Seberapa jauh AI nya boleh menerawang/melihat
     # alpha, beta = Variable yang dipakai untuk pruning
     # is_maximizing_player = Boolean untuk menandai apakah yang lagi dicek ini si AI atau manusianya
-    def alpha_beta(self, game_state, depth, alpha, beta, is_maximizing_player):
+    # def alpha_beta(self, game_state, depth, alpha, beta, is_maximizing_player):
 
-        # Ambil semua valid move untuk player yang lagi dievaluasi sekarang
+    #     # Ambil semua valid move untuk player yang lagi dievaluasi sekarang
+    #     valid_moves = game_state.get_valid_moves()
+        
+    #     # Cek kalau sudah tidak ada valid move untuk keduanya
+    #     # Kalau keduanya sudah tidak ada valid move, kembalikan board evaluation sebagai game over
+    #     if not valid_moves:
+    #         temp_game = copy.deepcopy(game_state)
+    #         temp_game.switch_player()
+    #         if not temp_game.get_valid_moves():
+    #             return self.evaluate_board(game_state.board, game_over=True)
+    #         else:
+    #             # Ini adalah kondisi kalau player yang lagi dievaluasi sekarang sudah tidak punya valid move
+    #             # Tetap lanjutnya evaluasi MiniMax dari sudut pandang player lain
+    #             # Kedalamannya tidak berkurang kareng ini dipaksa untuk diskip
+    #             if is_maximizing_player:
+    #                 # Kalau AI harus skip, jadi Min dicek
+    #                 return self.alpha_beta(temp_game, depth, alpha, beta, False)
+    #             else:
+    #                 # Kalau manusia harus skip, evaluasi lanjut untuk Max/AI
+    #                 return self.alpha_beta(temp_game, depth, alpha, beta, True)
+
+    #     # Kalau sudah mencapai ujung kedalaman yang boleh dievaluasi, dia akan mengembalikan nilai evaluasi papan saat ini
+    #     if depth == 0: # ****
+    #         return self.evaluate_board(game_state.board, game_over=False)
+
+    #     # Bagian yang rekursif
+    #     if is_maximizing_player:
+    #         best_value = -math.inf
+    #         for move in valid_moves:
+    #             # Simulasikan move yang bisa diambil pada copy-an dari game statenya
+    #             new_game_state = copy.deepcopy(game_state)
+    #             new_game_state.make_move(move[0], move[1])
+                
+    #             # Setelah Max jalan, next cek untuk Min
+    #             value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, False)
+    #             # Kalau udh mentok nanti akan return positional weightnya di ****
+
+    #             # Cek perbandingan antara best_value yang ditetapkan pertama dengan value yang baru didapat
+    #             best_value = max(best_value, value)
+    #             alpha = max(alpha, best_value)
+                
+    #             # Bagian pruning dari loopnya, kalau manusia sudah punya nilai beta (skor terendah yang bisa dia jamin untuk dirinya sendiri) 
+    #             # yang lebih kecil atau sama dengan alpha (skor tertinggi yang bisa AI jamin untuk dirinya sendiri)
+    #             # Skip karena gamungkin si manusia (berdasarkan algoritma MiniMax) akan ambil move tersebut
+    #             if alpha >= beta:
+    #                 break # Beta cutoff
+    #         return best_value
+            
+    #     else: # Minimizing player
+    #         best_value = math.inf
+    #         for move in valid_moves:
+    #             # Simulate the move
+    #             new_game_state = copy.deepcopy(game_state)
+    #             new_game_state.make_move(move[0], move[1])
+                
+    #             # Recurse (it's now the maximizer's turn)
+    #             value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, True)
+                
+    #             best_value = min(best_value, value)
+    #             beta = min(beta, best_value)
+                
+    #             # Pruning
+    #             if alpha >= beta:
+    #                 break # Alpha cutoff
+    #         return best_value
+
+    # Fungsi rekursif untuk MAXIMIZER (AI)
+    def max_value(self, game_state, depth, alpha, beta):
+
+        # === Base Cases (Sama seperti di alpha_beta asli) ===
         valid_moves = game_state.get_valid_moves()
         
-        # Cek kalau sudah tidak ada valid move untuk keduanya
-        # Kalau keduanya sudah tidak ada valid move, kembalikan board evaluation sebagai game over
+        # Cek kondisi game over atau skip giliran
         if not valid_moves:
             temp_game = copy.deepcopy(game_state)
             temp_game.switch_player()
             if not temp_game.get_valid_moves():
+                # Game over
                 return self.evaluate_board(game_state.board, game_over=True)
             else:
-                # Ini adalah kondisi kalau player yang lagi dievaluasi sekarang sudah tidak punya valid move
-                # Tetap lanjutnya evaluasi MiniMax dari sudut pandang player lain
-                # Kedalamannya tidak berkurang kareng ini dipaksa untuk diskip
-                if is_maximizing_player:
-                    # Kalau AI harus skip, jadi Min dicek
-                    return self.alpha_beta(temp_game, depth, alpha, beta, False)
-                else:
-                    # Kalau manusia harus skip, evaluasi lanjut untuk Max/AI
-                    return self.alpha_beta(temp_game, depth, alpha, beta, True)
+                # Max harus skip, panggil Min untuk evaluasi
+                return self.min_value(temp_game, depth, alpha, beta) # PERUBAHAN
 
-        # Kalau sudah mencapai ujung kedalaman yang boleh dievaluasi, dia akan mengembalikan nilai evaluasi papan saat ini
-        if depth == 0: # ****
+        # Cek kedalaman
+        if depth == 0:
             return self.evaluate_board(game_state.board, game_over=False)
+        # =======================================================
 
-        # Bagian yang rekursif
-        if is_maximizing_player:
-            best_value = -math.inf
-            for move in valid_moves:
-                # Simulasikan move yang bisa diambil pada copy-an dari game statenya
-                new_game_state = copy.deepcopy(game_state)
-                new_game_state.make_move(move[0], move[1])
-                
-                # Setelah Max jalan, next cek untuk Min
-                value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, False)
-                # Kalau udh mentok nanti akan return positional weightnya di ****
-
-                # Cek perbandingan antara best_value yang ditetapkan pertama dengan value yang baru didapat
-                best_value = max(best_value, value)
-                alpha = max(alpha, best_value)
-                
-                # Bagian pruning dari loopnya, kalau manusia sudah punya nilai beta (skor terendah yang bisa dia jamin untuk dirinya sendiri) 
-                # yang lebih kecil atau sama dengan alpha (skor tertinggi yang bisa AI jamin untuk dirinya sendiri)
-                # Skip karena gamungkin si manusia (berdasarkan algoritma MiniMax) akan ambil move tersebut
-                if alpha >= beta:
-                    break # Beta cutoff
-            return best_value
+        # Logika Maximizer
+        best_value = -math.inf
+        for move in valid_moves:
+            new_game_state = copy.deepcopy(game_state)
+            new_game_state.make_move(move[0], move[1])
             
-        else: # Minimizing player
-            best_value = math.inf
-            for move in valid_moves:
-                # Simulate the move
-                new_game_state = copy.deepcopy(game_state)
-                new_game_state.make_move(move[0], move[1])
-                
-                # Recurse (it's now the maximizer's turn)
-                value = self.alpha_beta(new_game_state, depth - 1, alpha, beta, True)
-                
-                best_value = min(best_value, value)
-                beta = min(beta, best_value)
-                
-                # Pruning
-                if alpha >= beta:
-                    break # Alpha cutoff
-            return best_value
+            # Panggil MIN setelah MAX jalan
+            value = self.min_value(new_game_state, depth - 1, alpha, beta) # PERUBAHAN
+            
+            best_value = max(best_value, value)
+            alpha = max(alpha, best_value)
+            
+            if alpha >= beta:
+                break # Beta cutoff
+        return best_value
+
+    # Fungsi rekursif untuk MINIMIZER (Manusia)
+    def min_value(self, game_state, depth, alpha, beta):
+
+        # === Base Cases (Sama seperti di alpha_beta asli) ===
+        valid_moves = game_state.get_valid_moves()
+        
+        # Cek kondisi game over atau skip giliran
+        if not valid_moves:
+            temp_game = copy.deepcopy(game_state)
+            temp_game.switch_player()
+            if not temp_game.get_valid_moves():
+                # Game over
+                return self.evaluate_board(game_state.board, game_over=True)
+            else:
+                # Min harus skip, panggil Max untuk evaluasi
+                return self.max_value(temp_game, depth, alpha, beta) # PERUBAHAN
+
+        # Cek kedalaman
+        if depth == 0:
+            return self.evaluate_board(game_state.board, game_over=False)
+        # =======================================================
+
+        # Logika Minimizer
+        best_value = math.inf
+        for move in valid_moves:
+            new_game_state = copy.deepcopy(game_state)
+            new_game_state.make_move(move[0], move[1])
+            
+            # Panggil MAX setelah MIN jalan
+            value = self.max_value(new_game_state, depth - 1, alpha, beta) # PERUBAHAN
+            
+            best_value = min(best_value, value)
+            beta = min(beta, best_value)
+            
+            if alpha >= beta:
+                break # Alpha cutoff
+        return best_value
