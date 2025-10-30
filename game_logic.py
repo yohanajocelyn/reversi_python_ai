@@ -148,14 +148,14 @@ class GameLogic:
 
 # Class dari AI nya
 class AIPlayer:
-    def __init__(self, player_piece, difficulty_depth=4):
+    def __init__(self, player_piece, difficulty_depth=5):
 
         # Menyimpan apakah AI nya sedang main sebagai dirinya sendiri (putih) atau simulasi manusianya (hitam)
         self.player_piece = player_piece 
         self.opponent_piece = WHITE_PIECE if player_piece == BLACK_PIECE else BLACK_PIECE
 
         # Difficulty depth ini adalah tingkat kedalaman tree MiniMaxnya yang akan dilihat AInya / seberapa jauh dia berusaha melihat kemungkinan masa depannya
-        # Defaultnya 4 kalau tidak diset di run_game
+        # Defaultnya 12 kalau tidak diset di run_game
         self.depth = difficulty_depth
 
         # Bobot dari peletakan posisi

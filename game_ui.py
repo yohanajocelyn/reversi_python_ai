@@ -209,7 +209,7 @@ class GameUI:
                             # Sekarang baru bikin objek-objek gamenya
                             # --- Create an instance of the game logic ---
                             game = GameLogic()
-                            ai = AIPlayer(AI_PLAYER, difficulty_depth=4)
+                            ai = AIPlayer(AI_PLAYER)
                             valid_moves = game.get_valid_moves()
 
                 elif game_state == "PLAYING":
@@ -248,7 +248,7 @@ class GameUI:
                         if reset_btn_rect.collidepoint(event.pos):
                             # Reset game => Sama kek mulai game baru tadi
                             game = GameLogic()
-                            ai = AIPlayer(AI_PLAYER, difficulty_depth=4)
+                            ai = AIPlayer(AI_PLAYER)
                             valid_moves = game.get_valid_moves()
                             game_state = "PLAYING"
             
