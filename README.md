@@ -1,3 +1,6 @@
+# GitHub Link
+Please view the README file on GitHub for better formatting: https://github.com/yohanajocelyn/reversi_python_ai.git
+
 # Library Used
 
 ## 1. Pygame
