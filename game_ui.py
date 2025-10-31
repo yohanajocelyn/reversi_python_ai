@@ -10,10 +10,14 @@ class GameUI:
     WIDTH = const.WIDTH
     HEIGHT = const.HEIGHT
 
+
     @staticmethod
-    def draw_intro_screen(screen, start_btn_rect, timer_buttons, minutes, seconds):
+    def draw_intro_screen(screen, start_btn_rect, min_input_rect, sec_input_rect, min_str, sec_str, active_input):
 
         text_color = (23, 42, 58)
+        box_fill_color = (255, 255, 255)
+        active_border_color = (200, 0, 0) # Red to show it's selected
+        inactive_border_color = text_color
 
         screen.fill((117, 221, 221))
         
@@ -45,7 +49,8 @@ class GameUI:
             "3. A valid move must 'outflank' one or more opponent disks.",
             "4. Outflanked disks (horizontal, vertical, or diagonal)",
              " will be 'reversed'.",
-            "5. A player without any valid moves will have their turn skipped."
+            "5. A player without any valid moves will have their turn skipped.",
+            "Note: Click on the input box to reset its value"
         ]
 
         start_y = subtitle_rect.bottom + 40
@@ -55,30 +60,38 @@ class GameUI:
             screen.blit(rule_text, rule_rect)
 
         # Bagian timer
-        timer_position_y = start_y + (len(rules) * 30) + 100
+        timer_position_y = start_y + (len(rules) * 30) + 47
         timer_label = timer_label_font.render("Set Game Timer", True, text_color)
         timer_label_rect = timer_label.get_rect(center=(const.WIDTH // 2, timer_position_y))
         screen.blit(timer_label, timer_label_rect)
 
-        timer_str = f"{minutes:02}:{seconds:02}"
-        timer_text = timer_font.render(timer_str, True, text_color)
-        timer_rect = timer_text.get_rect(center=(const.WIDTH // 2, timer_position_y + 30))
-        screen.blit(timer_text, timer_rect)
+        colon_text = timer_font.render(":", True, text_color)
+        colon_rect = colon_text.get_rect(center=(const.WIDTH // 2, timer_label_rect.bottom + 45))
+        screen.blit(colon_text, colon_rect)
 
-        for key, rect in timer_buttons.items():
-            pygame.draw.rect(screen, text_color, rect, border_radius=8)
-            if "up" in key:
-                text = timer_btn_font.render("+", True, const.WHITE)
-            else:
-                text = timer_btn_font.render("-", True, const.WHITE)
-            text_rect = text.get_rect(center=rect.center)
-            screen.blit(text, text_rect)
-        
-        min_label = rules_font.render("Minutes", True, text_color)
-        min_label_rect = min_label.get_rect(center=(timer_buttons["min_up"].centerx, timer_rect.bottom - 30))
+        # MINUTE INPUT BOX
+        min_border_color = active_border_color if active_input == 'min' else inactive_border_color
+        pygame.draw.rect(screen, box_fill_color, min_input_rect)
+        pygame.draw.rect(screen, min_border_color, min_input_rect, 3) # 3px border
+        # Format string to always show two digits, e.g., "05" or "5" -> "05"
+        min_surf = timer_font.render(f"{min_str.zfill(2)}", True, text_color)
+        min_surf_rect = min_surf.get_rect(center=min_input_rect.center)
+        screen.blit(min_surf, min_surf_rect)
+
+        # SECOND INPUT BOX
+        sec_border_color = active_border_color if active_input == 'sec' else inactive_border_color
+        pygame.draw.rect(screen, box_fill_color, sec_input_rect)
+        pygame.draw.rect(screen, sec_border_color, sec_input_rect, 3) # 3px border
+        sec_surf = timer_font.render(f"{sec_str.zfill(2)}", True, text_color)
+        sec_surf_rect = sec_surf.get_rect(center=sec_input_rect.center)
+        screen.blit(sec_surf, sec_surf_rect)
+
+        # Draw labels under boxes
+        min_label = rules_font.render("MIN", True, text_color)
+        min_label_rect = min_label.get_rect(center=(min_input_rect.centerx, min_input_rect.bottom + 20))
         screen.blit(min_label, min_label_rect)
-        sec_label = rules_font.render("Seconds", True, text_color)
-        sec_label_rect = sec_label.get_rect(center=(timer_buttons["sec_up"].centerx, min_label_rect.bottom - 10))
+        sec_label = rules_font.render("SEC", True, text_color)
+        sec_label_rect = sec_label.get_rect(center=(sec_input_rect.centerx, sec_input_rect.bottom + 20))
         screen.blit(sec_label, sec_label_rect)
         
         # DRAW THE START BUTTON COMPONENT
@@ -91,6 +104,7 @@ class GameUI:
         btn_rect = btn_text.get_rect(center=start_btn_rect.center)
         screen.blit(btn_text, btn_rect)
 
+
     @staticmethod
     def draw_board(screen):
         # Draws the board background and grid line
@@ -98,6 +112,7 @@ class GameUI:
         for i in range(const.ROWS + 1):
             pygame.draw.line(screen, const.LINE_COLOR, (0, i * const.SQUARE_SIZE), (const.WIDTH, i * const.SQUARE_SIZE), 2)
             pygame.draw.line(screen, const.LINE_COLOR, (i * const.SQUARE_SIZE, 0), (i * const.SQUARE_SIZE, const.BOARD_HEIGHT), 2)
+
 
     @staticmethod
     def draw_pieces(screen, board):
@@ -111,6 +126,7 @@ class GameUI:
                     center_y = row * const.SQUARE_SIZE + const.SQUARE_SIZE // 2
                     pygame.draw.circle(screen, color, (center_x, center_y), const.PIECE_RADIUS)
 
+
     @staticmethod
     def draw_valid_moves(screen, moves_list):
         
@@ -120,6 +136,7 @@ class GameUI:
             center_y = row * const.SQUARE_SIZE + const.SQUARE_SIZE // 2
             pygame.draw.circle(screen, const.VALID_MOVE_COLOR, (center_x, center_y), const.HINT_RADIUS)
     
+
     @staticmethod
     def get_final_score(board):
         ai_score = 0
@@ -132,6 +149,7 @@ class GameUI:
                     ai_score += 1
         return human_score, ai_score
     
+
     @staticmethod
     def draw_timer_panel(screen, game, remaining_ms):
         panel_rect = pygame.Rect(0, const.BOARD_HEIGHT, const.WIDTH, const.UI_PANEL_HEIGHT)
@@ -159,6 +177,7 @@ class GameUI:
         timer_surface = timer_font.render(timer_str, True, timer_color)
         timer_rect = timer_surface.get_rect(centery=panel_rect.centery, right=panel_rect.right - 20)
         screen.blit(timer_surface, timer_rect)
+
 
     @staticmethod
     def draw_game_over_screen(screen, game, reset_btn_rect):
@@ -211,6 +230,7 @@ class GameUI:
         btn_text_rect = btn_text.get_rect(center=reset_btn_rect.center)
         screen.blit(btn_text, btn_text_rect)
 
+
     def run_game(self):
         # Initialize all Pygame modules
         pygame.init()
@@ -238,11 +258,13 @@ class GameUI:
         game = None
         valid_moves = []
 
-        selected_min = 2
-        selected_sec = 30
         game_end_time = 0
         remaining_ms = 0
         timer_active = False
+
+        min_input_str = "03"
+        sec_input_str = "00"
+        active_input = None
 
         # SET BTN2 UNTUK SCREEN INTRO DAN GAMEOVER
         btn_width = 200
@@ -259,23 +281,27 @@ class GameUI:
         # Reset buttonnya
         reset_btn_rect = pygame.Rect(
             (const.WIDTH // 2) - (btn_width // 2), 
-            const.HEIGHT - 100, 
+            const.HEIGHT - 180, 
             btn_width, 
             btn_height
         )
 
-        timer_btn_size = 40
-        timer_btn_y_top = start_btn_rect.top - 170
-        timer_btn_y_bot = timer_btn_y_top + 80
-        min_btn_x = const.WIDTH // 2 - 150
-        sec_btn_x = const.WIDTH // 2 + 150
-
-        timer_buttons = {
-            "min_up": pygame.Rect(min_btn_x - (timer_btn_size // 2), timer_btn_y_top, timer_btn_size, timer_btn_size),
-            "min_down": pygame.Rect(min_btn_x - (timer_btn_size // 2), timer_btn_y_bot, timer_btn_size, timer_btn_size),
-            "sec_up": pygame.Rect(sec_btn_x - (timer_btn_size // 2), timer_btn_y_top, timer_btn_size, timer_btn_size),
-            "sec_down": pygame.Rect(sec_btn_x - (timer_btn_size // 2), timer_btn_y_bot, timer_btn_size, timer_btn_size)
-        }
+        # Rect for the input boxes (both minute and second)
+        box_width = 100
+        box_height = 60
+        box_y_pos = start_btn_rect.top - 130 # Y position for boxes
+        min_input_rect = pygame.Rect(
+            const.WIDTH // 2 - box_width - 20, # 20px left of center
+            box_y_pos,
+            box_width,
+            box_height
+        )
+        sec_input_rect = pygame.Rect(
+            const.WIDTH // 2 + 20, # 20px right of center
+            box_y_pos,
+            box_width,
+            box_height
+        )
 
         running = True
         while running:
@@ -304,6 +330,19 @@ class GameUI:
                             ai = AIPlayer(AI_PLAYER)
                             valid_moves = game.get_valid_moves()
 
+                            try:
+                                selected_min = int(min_input_str)
+                            except ValueError:
+                                selected_min = 0 # Default to 0 if empty
+                            try:
+                                selected_sec = int(sec_input_str)
+                            except ValueError:
+                                selected_sec = 0 # Default to 0 if empty
+                            
+                            # Final validation check
+                            selected_min = max(0, min(59, selected_min))
+                            selected_sec = max(0, min(59, selected_sec))
+
                             # Start the timer
                             total_time_seconds = selected_min * 60 + selected_sec
                             # Logika start timer kalau > 0
@@ -314,14 +353,39 @@ class GameUI:
                             else:
                                 remaining_ms = 0
                                 timer_active = False
-                        elif timer_buttons["min_up"].collidepoint(event.pos):
-                            selected_min = (selected_min + 1) % 60
-                        elif timer_buttons["min_down"].collidepoint(event.pos):
-                            selected_min = (selected_min - 1) % 60
-                        elif timer_buttons["sec_up"].collidepoint(event.pos):
-                            selected_sec = (selected_sec + 1) % 60
-                        elif timer_buttons["sec_down"].collidepoint(event.pos):
-                            selected_sec = (selected_sec - 1) % 60
+                        elif min_input_rect.collidepoint(event.pos):
+                            active_input = 'min'
+                            min_input_str = ""
+                        elif sec_input_rect.collidepoint(event.pos):
+                            active_input = 'sec'
+                            sec_input_str = ""
+                        else:
+                            active_input = None
+
+                    elif event.type == pygame.KEYDOWN and active_input is not None:
+                        current_str = ""
+                        if active_input == 'min':
+                            current_str = min_input_str
+                        elif active_input == 'sec':
+                            current_str = sec_input_str
+                        
+                        if event.key == pygame.K_BACKSPACE:
+                            current_str = current_str[:-1]
+                        elif event.unicode.isdigit():
+                            if len(current_str) < 2:
+                                new_str = current_str + event.unicode
+                                # Validate immediately to prevent typing > 59
+                                try:
+                                    if int(new_str) <= 59:
+                                        current_str = new_str
+                                except ValueError:
+                                    current_str = event.unicode
+
+                        # Update the appropriate input string
+                        if active_input == 'min':
+                            min_input_str = current_str
+                        elif active_input == 'sec':
+                            sec_input_str = current_str
 
                 elif game_state == "PLAYING":
                     if event.type == pygame.MOUSEBUTTONDOWN and game.current_player == HUMAN_PLAYER and timer_active:
@@ -359,21 +423,22 @@ class GameUI:
                         # Check if kita click di reset buttonnya
                         if reset_btn_rect.collidepoint(event.pos):
                             # Reset game => Sama kek mulai game baru tadi
-                            game = GameLogic()
-                            ai = AIPlayer(AI_PLAYER)
-                            valid_moves = game.get_valid_moves()
-                            game_state = "INTRO"
-                            
-                            # Reset timer settings juga
-                            selected_min = 2
-                            selected_sec = 30
+                            game = None
+                            ai = None
+                            valid_moves = []
                             game_end_time = 0
                             remaining_ms = 0
                             timer_active = False
+
+                            min_input_str = "03" # Reset to default
+                            sec_input_str = "00"
+                            active_input = None
+
+                            game_state = "INTRO"
             
             # Game Logic dan Drawing (based on the states)
             if game_state == "INTRO":
-                self.draw_intro_screen(screen, start_btn_rect, timer_buttons, selected_min, selected_sec)
+                self.draw_intro_screen(screen, start_btn_rect, min_input_rect, sec_input_rect, min_input_str, sec_input_str, active_input)
             elif game_state == "PLAYING":
                 # --- Update display to show Human's last move ---
                 # (We do this here so the player sees the board *before* the AI thinks)
