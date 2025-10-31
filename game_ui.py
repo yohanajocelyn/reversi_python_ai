@@ -11,7 +11,7 @@ class GameUI:
     HEIGHT = const.HEIGHT
 
     @staticmethod
-    def draw_intro_screen(screen, start_btn_rect):
+    def draw_intro_screen(screen, start_btn_rect, timer_buttons, minutes, seconds):
 
         text_color = (23, 42, 58)
 
@@ -23,9 +23,14 @@ class GameUI:
         rules_font = pygame.font.SysFont(None, 28)
         btn_font = pygame.font.SysFont(None, 42, bold=True)
 
+        # Tambahan fitur timer
+        timer_label_font = pygame.font.SysFont(None, 36, bold=True)
+        timer_font = pygame.font.SysFont("monospace", 50, bold=True)
+        timer_btn_font = pygame.font.SysFont(None, 50, bold=True)
+
         # Title Text
         title_text = title_font.render("REVERSI", True, text_color)
-        title_rect = title_text.get_rect(center=(const.WIDTH // 2, const.HEIGHT // 5))
+        title_rect = title_text.get_rect(center=(const.WIDTH // 2, const.HEIGHT // 8))
         screen.blit(title_text, title_rect)
 
         # Subtitle text
@@ -43,11 +48,38 @@ class GameUI:
             "5. A player without any valid moves will have their turn skipped."
         ]
 
-        start_y = subtitle_rect.bottom + 60
+        start_y = subtitle_rect.bottom + 40
         for i, rule in enumerate(rules):
             rule_text = rules_font.render(rule, True, text_color)
             rule_rect = rule_text.get_rect(center=(const.WIDTH // 2, start_y + i * 35))
             screen.blit(rule_text, rule_rect)
+
+        # Bagian timer
+        timer_position_y = start_y + (len(rules) * 30) + 40
+        timer_label = timer_label_font.render("Set Game Timer", True, text_color)
+        timer_label_rect = timer_label.get_rect(center=(const.WIDTH // 2, timer_position_y))
+        screen.blit(timer_label, timer_label_rect)
+
+        timer_str = f"{minutes:02}:{seconds:02}"
+        timer_text = timer_font.render(timer_str, True, text_color)
+        timer_rect = timer_text.get_rect(center=(const.WIDTH // 2, timer_position_y + 30))
+        screen.blit(timer_text, timer_rect)
+
+        for key, rect in timer_buttons.items():
+            pygame.draw.rect(screen, text_color, rect, border_radius=8)
+            if "up" in key:
+                text = timer_btn_font.render("+", True, const.WHITE)
+            else:
+                text = timer_btn_font.render("-", True, const.WHITE)
+            text_rect = text.get_rect(center=rect.center)
+            screen.blit(text, text_rect)
+        
+        min_label = rules_font.render("Minutes", True, text_color)
+        min_label_rect = min_label.get_rect(center=(timer_buttons["min_up"].centerx, timer_rect.bottom + 25))
+        screen.blit(min_label, min_label_rect)
+        sec_label = rules_font.render("Seconds", True, text_color)
+        sec_label_rect = sec_label.get_rect(center=(timer_buttons["sec_up"].centerx, min_label_rect.bottom + 25))
+        screen.blit(sec_label, sec_label_rect)
         
         # DRAW THE START BUTTON COMPONENT
         # Draw the rectangle shape of the button
@@ -65,7 +97,7 @@ class GameUI:
         screen.fill(const.BOARD_COLOR)
         for i in range(const.ROWS + 1):
             pygame.draw.line(screen, const.LINE_COLOR, (0, i * const.SQUARE_SIZE), (const.WIDTH, i * const.SQUARE_SIZE), 2)
-            pygame.draw.line(screen, const.LINE_COLOR, (i * const.SQUARE_SIZE, 0), (i * const.SQUARE_SIZE, const.HEIGHT), 2)
+            pygame.draw.line(screen, const.LINE_COLOR, (i * const.SQUARE_SIZE, 0), (i * const.SQUARE_SIZE, const.BOARD_HEIGHT), 2)
 
     @staticmethod
     def draw_pieces(screen, board):
@@ -180,7 +212,7 @@ class GameUI:
         # Start button
         start_btn_rect = pygame.Rect(
             (const.WIDTH // 2) - (btn_width // 2), 
-            const.HEIGHT - 150, 
+            const.HEIGHT - 100, 
             btn_width, 
             btn_height
         )

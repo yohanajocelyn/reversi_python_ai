@@ -12,9 +12,10 @@ ROWS = 8
 COLS = 8
 SQUARE_SIZE = 80 # Ukuran dari tiap kotak pada papannya, dalam pixel
 
-# Total window dimensions
+BOARD_HEIGHT = ROWS * SQUARE_SIZE
+UI_PANEL_HEIGHT = 80
 WIDTH = COLS * SQUARE_SIZE
-HEIGHT = ROWS * SQUARE_SIZE
+HEIGHT = BOARD_HEIGHT + UI_PANEL_HEIGHT
 
 # Representasi dari kondisi suatu kotak, kalau kosong (gaada disk) = 0, dstnya sesuai di bawah ini
 EMPTY = 0
