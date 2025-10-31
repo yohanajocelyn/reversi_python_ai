@@ -297,6 +297,9 @@ class GameUI:
                             print("Game Over! No players have valid moves.")
                             game_state = "GAME_OVER"
 
+                if game.current_player == HUMAN_PLAYER:
+                    self.draw_valid_moves(screen, valid_moves)
+
             elif game_state == "GAME_OVER":
                 self.draw_game_over_screen(screen, game, reset_btn_rect)
 
