@@ -55,7 +55,7 @@ class GameUI:
             screen.blit(rule_text, rule_rect)
 
         # Bagian timer
-        timer_position_y = start_y + (len(rules) * 30) + 40
+        timer_position_y = start_y + (len(rules) * 30) + 100
         timer_label = timer_label_font.render("Set Game Timer", True, text_color)
         timer_label_rect = timer_label.get_rect(center=(const.WIDTH // 2, timer_position_y))
         screen.blit(timer_label, timer_label_rect)
@@ -75,10 +75,10 @@ class GameUI:
             screen.blit(text, text_rect)
         
         min_label = rules_font.render("Minutes", True, text_color)
-        min_label_rect = min_label.get_rect(center=(timer_buttons["min_up"].centerx, timer_rect.bottom + 25))
+        min_label_rect = min_label.get_rect(center=(timer_buttons["min_up"].centerx, timer_rect.bottom - 30))
         screen.blit(min_label, min_label_rect)
         sec_label = rules_font.render("Seconds", True, text_color)
-        sec_label_rect = sec_label.get_rect(center=(timer_buttons["sec_up"].centerx, min_label_rect.bottom + 25))
+        sec_label_rect = sec_label.get_rect(center=(timer_buttons["sec_up"].centerx, min_label_rect.bottom - 10))
         screen.blit(sec_label, sec_label_rect)
         
         # DRAW THE START BUTTON COMPONENT
@@ -153,7 +153,7 @@ class GameUI:
         timer_str = f"{minutes:02}:{seconds:02}"
 
         timer_color = const.UI_TEXT_COLOR
-        if remaining_seconds < 10 and remaining_seconds % 2 == 0:
+        if remaining_seconds < 10:
             timer_color = (97, 28, 53)
         
         timer_surface = timer_font.render(timer_str, True, timer_color)
@@ -238,8 +238,8 @@ class GameUI:
         game = None
         valid_moves = []
 
-        selected_min = 5
-        selected_sec = 0
+        selected_min = 2
+        selected_sec = 30
         game_end_time = 0
         remaining_ms = 0
         timer_active = False
@@ -267,8 +267,8 @@ class GameUI:
         timer_btn_size = 40
         timer_btn_y_top = start_btn_rect.top - 170
         timer_btn_y_bot = timer_btn_y_top + 80
-        min_btn_x = const.WIDTH // 2 - 80
-        sec_btn_x = const.WIDTH // 2 + 80
+        min_btn_x = const.WIDTH // 2 - 150
+        sec_btn_x = const.WIDTH // 2 + 150
 
         timer_buttons = {
             "min_up": pygame.Rect(min_btn_x - (timer_btn_size // 2), timer_btn_y_top, timer_btn_size, timer_btn_size),
@@ -365,8 +365,8 @@ class GameUI:
                             game_state = "INTRO"
                             
                             # Reset timer settings juga
-                            selected_min = 5
-                            selected_sec = 0
+                            selected_min = 2
+                            selected_sec = 30
                             game_end_time = 0
                             remaining_ms = 0
                             timer_active = False
@@ -430,6 +430,7 @@ class GameUI:
                 self.draw_timer_panel(screen, game, remaining_ms)
 
             elif game_state == "GAME_OVER":
+                pygame.time.wait(1000)
                 self.draw_game_over_screen(screen, game, reset_btn_rect)
 
             # --- Update Display ---
