@@ -40,7 +40,6 @@ You should see the installed Python version displayed.
 
 ```
 python -m venv reversi_env
-
 ```
 
     Activate the virtual environment:
@@ -49,14 +48,12 @@ python -m venv reversi_env
 
 ```
 reversi_env\Scripts\activate
-
 ```
 
 - On macOS/Linux:
 
 ```
 source reversi_env/bin/activate
-
 ```
 
 After activating the virtual environment, run the package installation command again to ensure all dependencies are installed within the virtual environment:
@@ -80,7 +77,3 @@ python3 reversi_ai.py
 
 This will start the Reversi game with the AI.
 Enjoy playing Reversi against the AI!
-
-```
-
-```
