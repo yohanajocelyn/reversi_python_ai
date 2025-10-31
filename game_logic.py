@@ -29,6 +29,9 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 VALID_MOVE_COLOR = (255, 255, 0) # Yellow for the hint dots
 
+UI_PANEL_COLOR = (128, 177, 146)
+UI_TEXT_COLOR = (73, 53, 72)
+
 # Ukuran dari titik hint valid moves untuk manusianya
 PIECE_RADIUS = SQUARE_SIZE // 2 - 5
 HINT_RADIUS = SQUARE_SIZE // 6

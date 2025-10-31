@@ -121,20 +121,53 @@ class GameUI:
             pygame.draw.circle(screen, const.VALID_MOVE_COLOR, (center_x, center_y), const.HINT_RADIUS)
     
     @staticmethod
+    def get_final_score(board):
+        ai_score = 0
+        human_score = 0
+        for r in range(const.ROWS):
+            for c in range(const.COLS):
+                if board[r][c] == const.BLACK_PIECE:
+                    human_score += 1
+                elif board[r][c] == const.WHITE_PIECE:
+                    ai_score += 1
+        return human_score, ai_score
+    
+    @staticmethod
+    def draw_timer_panel(screen, game, remaining_ms):
+        panel_rect = pygame.Rect(0, const.BOARD_HEIGHT, const.WIDTH, const.UI_PANEL_HEIGHT)
+        pygame.draw.rect(screen, const.UI_PANEL_COLOR, panel_rect)
+        
+        score_font = pygame.font.SysFont(None, 36)
+        timer_font = pygame.font.SysFont("monospace", 42, bold=True)
+
+        human_score, ai_score = GameUI.get_final_score(game.board)
+        score_text = f"Human: {human_score} AI: {ai_score}"
+        score_surface = score_font.render(score_text, True, const.UI_TEXT_COLOR)
+        score_rect = score_surface.get_rect(center=panel_rect.center, left=panel_rect.left + 20)
+        screen.blit(score_surface, score_rect)
+
+        # Draw the timer
+        remaining_seconds = max(0, remaining_ms // 1000)
+        minutes = remaining_seconds // 60
+        seconds = remaining_seconds % 60
+        timer_str = f"{minutes:02}:{seconds:02}"
+
+        timer_color = const.UI_TEXT_COLOR
+        if remaining_seconds < 10 and remaining_seconds % 2 == 0:
+            timer_color = (97, 28, 53)
+        
+        timer_surface = timer_font.render(timer_str, True, timer_color)
+        timer_rect = timer_surface.get_rect(centery=panel_rect.centery, right=panel_rect.right - 20)
+        screen.blit(timer_surface, timer_rect)
+
+    @staticmethod
     def draw_game_over_screen(screen, game, reset_btn_rect):
         screen.fill((117, 221, 221))
 
         text_color = (23, 42, 58)
 
         # Calculate the final scores
-        ai_score = 0
-        human_score = 0
-        for r in range(const.ROWS):
-            for c in range(const.COLS):
-                if game.board[r][c] == const.BLACK_PIECE:
-                    human_score += 1
-                elif game.board[r][c] == const.WHITE_PIECE:
-                    ai_score += 1
+        human_score, ai_score = GameUI.get_final_score(game.board)
         
         # Determine the winner
         if ai_score > human_score:
@@ -205,6 +238,12 @@ class GameUI:
         game = None
         valid_moves = []
 
+        selected_min = 5
+        selected_sec = 0
+        game_end_time = 0
+        remaining_ms = 0
+        timer_active = False
+
         # SET BTN2 UNTUK SCREEN INTRO DAN GAMEOVER
         btn_width = 200
         btn_height = 60
@@ -225,8 +264,31 @@ class GameUI:
             btn_height
         )
 
+        timer_btn_size = 40
+        timer_btn_y_top = start_btn_rect.top - 170
+        timer_btn_y_bot = timer_btn_y_top + 80
+        min_btn_x = const.WIDTH // 2 - 80
+        sec_btn_x = const.WIDTH // 2 + 80
+
+        timer_buttons = {
+            "min_up": pygame.Rect(min_btn_x - (timer_btn_size // 2), timer_btn_y_top, timer_btn_size, timer_btn_size),
+            "min_down": pygame.Rect(min_btn_x - (timer_btn_size // 2), timer_btn_y_bot, timer_btn_size, timer_btn_size),
+            "sec_up": pygame.Rect(sec_btn_x - (timer_btn_size // 2), timer_btn_y_top, timer_btn_size, timer_btn_size),
+            "sec_down": pygame.Rect(sec_btn_x - (timer_btn_size // 2), timer_btn_y_bot, timer_btn_size, timer_btn_size)
+        }
+
         running = True
         while running:
+
+            if timer_active and game_state == "PLAYING":
+                current_ticks = pygame.time.get_ticks()
+                remaining_ms = game_end_time - current_ticks
+                if remaining_ms <= 0:
+                    remaining_ms = 0
+                    timer_active = False
+                    game_state = "GAME_OVER"
+                    print("Time's up! Game Over.")
+
             # --- Event Handling ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -242,8 +304,27 @@ class GameUI:
                             ai = AIPlayer(AI_PLAYER)
                             valid_moves = game.get_valid_moves()
 
+                            # Start the timer
+                            total_time_seconds = selected_min * 60 + selected_sec
+                            # Logika start timer kalau > 0
+                            if total_time_seconds > 0:
+                                game_end_time = pygame.time.get_ticks() + total_time_seconds * 1000
+                                remaining_ms = total_time_seconds * 1000
+                                timer_active = True
+                            else:
+                                remaining_ms = 0
+                                timer_active = False
+                        elif timer_buttons["min_up"].collidepoint(event.pos):
+                            selected_min = (selected_min + 1) % 60
+                        elif timer_buttons["min_down"].collidepoint(event.pos):
+                            selected_min = (selected_min - 1) % 60
+                        elif timer_buttons["sec_up"].collidepoint(event.pos):
+                            selected_sec = (selected_sec + 1) % 60
+                        elif timer_buttons["sec_down"].collidepoint(event.pos):
+                            selected_sec = (selected_sec - 1) % 60
+
                 elif game_state == "PLAYING":
-                    if event.type == pygame.MOUSEBUTTONDOWN and game.current_player == HUMAN_PLAYER:
+                    if event.type == pygame.MOUSEBUTTONDOWN and game.current_player == HUMAN_PLAYER and timer_active:
                         # 1. Get mouse position in pixels
                         mouse_x, mouse_y = pygame.mouse.get_pos()
                         
@@ -271,6 +352,7 @@ class GameUI:
                                 if not valid_moves:
                                     print("Game Over! No players have valid moves.")
                                     game_state = "GAME_OVER"
+                                    timer_active = False
                 
                 elif game_state == "GAME_OVER":
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -280,19 +362,27 @@ class GameUI:
                             game = GameLogic()
                             ai = AIPlayer(AI_PLAYER)
                             valid_moves = game.get_valid_moves()
-                            game_state = "PLAYING"
+                            game_state = "INTRO"
+                            
+                            # Reset timer settings juga
+                            selected_min = 5
+                            selected_sec = 0
+                            game_end_time = 0
+                            remaining_ms = 0
+                            timer_active = False
             
             # Game Logic dan Drawing (based on the states)
             if game_state == "INTRO":
-                self.draw_intro_screen(screen, start_btn_rect)
+                self.draw_intro_screen(screen, start_btn_rect, timer_buttons, selected_min, selected_sec)
             elif game_state == "PLAYING":
                 # --- Update display to show Human's last move ---
                 # (We do this here so the player sees the board *before* the AI thinks)
                 self.draw_board(screen)
                 self.draw_pieces(screen, game.board)
+                self.draw_timer_panel(screen, game, remaining_ms)
 
             # --- AI's Turn (No event checking needed) ---
-                if game.current_player == AI_PLAYER:
+                if game.current_player == AI_PLAYER and timer_active:
                     pygame.display.flip() # Show the board
 
                     pygame.time.wait(1000)
@@ -301,6 +391,9 @@ class GameUI:
                     pygame.display.set_caption("Othello (Reversi) - AI is thinking...")
                     best_move = ai.find_best_move(game)
                     pygame.display.set_caption("Othello (Reversi)")
+
+                    if not timer_active:
+                        break
 
                     if best_move:
                         # --- Make the AI's move ---
@@ -319,6 +412,7 @@ class GameUI:
                             if not valid_moves:
                                 print("Game Over! No players have valid moves.")
                                 game_state = "GAME_OVER"
+                                timer_active = False
                     else:
                         # This case handles if the AI *starts* its turn but has no moves
                         # (which should be caught by the human's turn logic, but this is safe)
@@ -328,9 +422,12 @@ class GameUI:
                         if not valid_moves:
                             print("Game Over! No players have valid moves.")
                             game_state = "GAME_OVER"
+                            timer_active = False
 
                 if game.current_player == HUMAN_PLAYER:
                     self.draw_valid_moves(screen, valid_moves)
+                
+                self.draw_timer_panel(screen, game, remaining_ms)
 
             elif game_state == "GAME_OVER":
                 self.draw_game_over_screen(screen, game, reset_btn_rect)
