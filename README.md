@@ -1,3 +1,21 @@
+# Library Used
+
+## 1. Pygame
+
+Pygame is a third-party Python library. It's used in this project to help create all of the game's UI (board, disk pieces, texts and instructions)
+
+## 2. Copy:
+
+Copy is Python's library that we use for its .deepcopy() function which copies the game state for the competitive algorithm (MiniMax with Alpha-Beta Pruning) to simulate the game as it is exploring the possible actions and finding the heuristic score
+
+## 3. Math:
+
+Math is Python's library that we use for its math.inf value for the alpha (-inf) and beta (+inf) in our algorithm
+
+# IDE Used
+
+## Visual Studio Code
+
 # Reversi AI - Setup and Installation Guide
 
 This guide will walk you through setting up and running the Python-based Reversi (Othello) game on a new computer.
