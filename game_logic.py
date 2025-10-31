@@ -148,7 +148,7 @@ class GameLogic:
 
 # Class dari AI nya
 class AIPlayer:
-    def __init__(self, player_piece, difficulty_depth=4):
+    def __init__(self, player_piece, difficulty_depth=5):
 
         # Menyimpan apakah AI nya sedang main sebagai dirinya sendiri (putih) atau simulasi manusianya (hitam)
         self.player_piece = player_piece 
