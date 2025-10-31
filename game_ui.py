@@ -165,8 +165,6 @@ class GameUI:
         HUMAN_PLAYER = const.BLACK_PIECE
         AI_PLAYER = const.WHITE_PIECE
 
-        gameUi = GameUI()
-
         # --- Create an instance of the AI ---
         # You can change difficulty_depth. 
         # 4 is decent. 5-6 is much stronger but slower.
@@ -254,15 +252,15 @@ class GameUI:
             
             # Game Logic dan Drawing (based on the states)
             if game_state == "INTRO":
-                gameUi.draw_intro_screen(screen, start_btn_rect)
+                self.draw_intro_screen(screen, start_btn_rect)
             elif game_state == "PLAYING":
             # --- AI's Turn (No event checking needed) ---
                 if game.current_player == AI_PLAYER:
                     
                     # --- Update display to show Human's last move ---
                     # (We do this here so the player sees the board *before* the AI thinks)
-                    gameUi.draw_board(screen)
-                    gameUi.draw_pieces(screen, game.board)
+                    self.draw_board(screen)
+                    self.draw_pieces(screen, game.board)
                     pygame.display.flip() # Show the board
 
                     pygame.time.wait(1000)
@@ -301,19 +299,19 @@ class GameUI:
 
                 # --- Drawing ---
                 # 1. Draw the static board (background and grid)
-                gameUi.draw_board(screen)
+                self.draw_board(screen)
                 
                 # 2. Draw the pieces on top of the board (using the logic's board)
-                gameUi.draw_pieces(screen, game.board)
+                self.draw_pieces(screen, game.board)
 
                 if game.current_player == HUMAN_PLAYER:
-                    gameUi.draw_valid_moves(screen, valid_moves)
+                    self.draw_valid_moves(screen, valid_moves)
 
                 # 3. NEW: Draw the hint dots for valid moves
-                # gameUi.draw_valid_moves(screen, valid_moves)
+                # self.draw_valid_moves(screen, valid_moves)
 
             elif game_state == "GAME_OVER":
-                gameUi.draw_game_over_screen(screen, game, reset_btn_rect)
+                self.draw_game_over_screen(screen, game, reset_btn_rect)
 
             # --- Update Display ---
             pygame.display.flip()
