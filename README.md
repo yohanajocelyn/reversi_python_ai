@@ -7,6 +7,8 @@ This guide will walk you through setting up and running the Python-based Reversi
 
 - Go to the official Python website: python.org
 - Download the latest stable version for your operating system (e.g., Python 3.12).
+- NOTE: Make sure to download Python 3.x, as Python 2.x is no longer supported.
+- NOTE: Python 3.14^ won't work with this codebase; please use Python 3.13 or earlier.
 
 2. Run the Python Installer
    Once the download is complete, run the installer file (e.g., python-3.12.x.exe on Windows or the .pkg file on macOS).
