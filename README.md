@@ -42,6 +42,8 @@ You should see the installed Python version displayed.
 
 ## 5. Create Virtual Environment (Optional but Recommended)
 
+**Note:** If you prefer not to create a virtual environment, you can proceed directly to Step 6.
+
 It's a good practice to create a virtual environment for your Python projects to manage dependencies.
 In your terminal, navigate to the directory where you want to set up the Reversi AI and run:
 
@@ -63,13 +65,15 @@ reversi_env\Scripts\activate
 source reversi_env/bin/activate
 ```
 
-After activating the virtual environment, run the package installation command again to ensure all dependencies are installed within the virtual environment:
+## 6. Install Dependencies
+
+Install the required Python packages by running:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 6. Run the Reversi AI
+## 7. Run the Reversi AI
 
 Now you can run the Reversi AI. In your terminal, navigate to the directory where the Reversi AI code is located and run:
 
