@@ -16,7 +16,7 @@ class AIPlayer:
         self.opponent_piece = const.WHITE_PIECE if player_piece == const.BLACK_PIECE else const.BLACK_PIECE
 
         # Difficulty depth ini adalah tingkat kedalaman tree MiniMaxnya yang akan dilihat AInya / seberapa jauh dia berusaha melihat kemungkinan masa depannya
-        # Defaultnya 12 kalau tidak diset di run_game
+        # Defaultnya 5 kalau tidak diset di run_game
         self.depth = difficulty_depth
 
         # Bobot dari peletakan posisi
