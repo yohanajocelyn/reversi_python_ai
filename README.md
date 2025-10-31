@@ -42,7 +42,7 @@ You should see the installed Python version displayed.
 python -m venv reversi_env
 ```
 
-    Activate the virtual environment:
+Activate the virtual environment:
 
 - On Windows:
 
